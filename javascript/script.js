@@ -1,49 +1,23 @@
-const body = document.querySelector("body");
-const btnTheme = document.querySelector(".btn-theme");
-const btnNext = document.querySelector(".btn-next");
-const btnPrev = document.querySelector(".btn-prev");
-const logo = document.querySelector(".logo");
-const searchInput = document.querySelector(".input");
-const modal__close = document.querySelector(".modal__close");
-
 let allMovies = [];
 let currentPage = 0;
 let currentTheme = localStorage.getItem("theme") ?? "light";
 
+function FillData(resultsList) {
+  for (let i = 0; i <= 2; i++) {
+    let page = resultsList.splice(0, 6);
+    allMovies.push(page);
+  }
+}
 async function viewMovieCards() {
   try {
     const { data } = await apiAxios.get("discover/movie?language=pt-BR&include_adult=false");
-    let resultsList = data.results;
-
-    for (let i = 0; i <= 2; i++) {
-      let page = resultsList.splice(0, 6);
-      allMovies.push(page);
-    }
+    const resultsList = data.results;
+    FillData(resultsList)
   } catch (erro) {
-    console.error(erro);
+    console.error(erro.message);
   }
   createMovieCards(allMovies[0]);
 }
-viewMovieCards();
-
-function nextPage() {
-  if (currentPage === 2) {
-    currentPage = 0;
-  } else {
-    currentPage++;
-  }
-  createMovieCards(allMovies[currentPage]);
-}
-
-function prevPage() {
-  if (currentPage === 0) {
-    currentPage = 2;
-  } else {
-    currentPage--;
-  }
-  createMovieCards(allMovies[currentPage]);
-}
-
 function createMovieCards(arrayMovies) {
   const movies = document.querySelector(".movies");
   movies.innerHTML = "";
@@ -71,10 +45,10 @@ function createMovieCards(arrayMovies) {
     img.src = "../assets/estrela.svg";
     img.alt = "Estrela";
 
-    movies.append(movie);
-    movie.append(info);
+    movies.appendChild(movie);
+    movie.appendChild(info);
     info.append(title, rating);
-    rating.append(img);
+    rating.appendChild(img);
 
     movie.addEventListener("click", (event) => {
       if (event.target.id.length > 1)
@@ -83,36 +57,52 @@ function createMovieCards(arrayMovies) {
   });
 }
 
-async function inputSearchMovies() {
-  allMovies = [];
+const btnNext = document.querySelector(".btn-next");
+const btnPrev = document.querySelector(".btn-prev");
 
-  if (!searchInput.value)
-    return viewMovieCards();
+function nextPage() {
+  if (currentPage === 2) {
+    currentPage = 0;
+  } else {
+    currentPage++;
+  }
+  createMovieCards(allMovies[currentPage]);
+}
+function prevPage() {
+  if (currentPage === 0) {
+    currentPage = 2;
+  } else {
+    currentPage--;
+  }
+  createMovieCards(allMovies[currentPage]);
+}
+
+const searchInput = document.querySelector(".input");
+
+async function fetchMovie() {
+  
+    if (!searchInput.value)
+      return viewMovieCards()
 
   try {
+    
     const search = await apiAxios.get(`search/movie?language=pt-BR&include_adult=false&query=${searchInput.value}`);
-    let resultsList = search.data.results;
 
-    for (let i = 0; i <= 2; i++) {
-      let page = resultsList.splice(0, 6);
-      allMovies.push(page);
-    }
+    FillData(search.data.results)
+    allMovies = [];
+
   } catch (erro) {
-    console.error(erro);
+    console.error(erro.message);
+    viewMovieCards()
   }
   createMovieCards(allMovies[0]);
   searchInput.value = "";
 }
-
-(async function dayMovie() {
+async function dayMovie() {
   try {
-    const dayMovie = await apiAxios.get("discover/movie?language=pt-BR&include_adult=false");
-    const movie = await apiAxios.get(
-      `movie/${dayMovie.data.results[0].id}?language=pt-BR`
-    );
-    const trailer = await apiAxios.get(
-      `movie/${dayMovie.data.results[0].id}/videos?language=pt-BR`
-    );
+
+    const movie = await apiAxios.get(`movie/436969?language=pt-BR`);
+    const trailer = await apiAxios.get(`movie/436969/videos?language=pt-BR`);
 
     const highlightVideo = document.querySelector(".highlight__video");
     highlightVideo.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.5) 100%, rgba(0, 0, 0, 0.5) 100%), url(${movie.data.backdrop_path})` ?? `url(${".src/assets/imagem-indisponivel-para-produtos-sem-imagem_15_5.jpg"})`;
@@ -122,34 +112,32 @@ async function inputSearchMovies() {
     highlightTitle.innerText = movie.data.title;
 
     const highlightRating = document.querySelector(".highlight__rating");
-    highlightRating.innerText = movie.data.vote_average.toFixed(1);
+    highlightRating.innerText = (movie.data.vote_average).toFixed(1);
 
     const highlightGenres = document.querySelector(".highlight__genres");
-    highlightGenres.innerText = movie.data.genres
-      .map((genres) => genres.name)
-      .join(", ");
+    highlightGenres.innerText = movie.data.genres.map((genres) => genres.name).join(", ");
 
     const highlightLaunch = document.querySelector(".highlight__launch");
-    highlightLaunch.innerText = new Date(
-      movie.data.release_date
-    ).toLocaleDateString("pt-BR", {
+    highlightLaunch.innerText = new Date(movie.data.release_date).toLocaleDateString(
+      "pt-BR", {
       year: "numeric",
       month: "long",
       day: "numeric",
       timeZone: "UTC",
     });
 
-    const highlightDescription = document.querySelector(
-      ".highlight__description"
-    );
+    const highlightDescription = document.querySelector(".highlight__description");
     highlightDescription.innerText = movie.data.overview;
 
     const highlightVideoLink = document.querySelector(".highlight__video-link");
     highlightVideoLink.href = `https://www.youtube.com/watch?v=${trailer.data.results[0].key}`;
+
   } catch (erro) {
-    console.error(erro);
+    console.error(erro.message);
   }
-})();
+}
+
+const modal__close = document.querySelector(".modal__close");
 
 async function openModal(movieId) {
   try {
@@ -172,26 +160,29 @@ async function openModal(movieId) {
 
     const modalGenres = document.querySelector(".modal__genres");
     modalGenres.innerText = "";
+
     movie.data.genres.forEach((genre) => {
       const modalGenre = document.createElement("span");
 
       modalGenre.innerText = genre.name;
       modalGenre.classList.add("modal__genre");
-      modalGenres.append(modalGenre);
-
-      modal__close.addEventListener("click", () => {
-        document.querySelector(".modal").classList.add("hidden")
-      });
-
-      document.querySelector(".modal__body").addEventListener("click", () => {
-        document.querySelector(".modal").classList.add("hidden");
-      })
-
+      modalGenres.appendChild(modalGenre);
     });
+
+    modal__close.addEventListener("click", () => {
+      document.querySelector(".modal").classList.add("hidden")
+    });
+    document.querySelector(".modal__body").addEventListener("click", () => {
+      document.querySelector(".modal").classList.add("hidden");
+    })
   } catch (erro) {
-    console.error(erro);
+    console.error(erro.message);
   }
 }
+
+const body = document.querySelector("body");
+const btnTheme = document.querySelector(".btn-theme");
+const logo = document.querySelector(".logo");
 
 const darkTheme = () => {
   currentTheme = "dark";
@@ -208,7 +199,6 @@ const darkTheme = () => {
   body.style.setProperty("--bg-secondary", "#2D3440");
   localStorage.setItem("theme", "dark");
 };
-
 const lightTheme = () => {
   currentTheme = "light";
   searchInput.style.background = "#fff";
@@ -223,30 +213,30 @@ const lightTheme = () => {
   body.style.setProperty("--bg-secondary", "#EDEDED");
   localStorage.setItem("theme", "light");
 };
-
-const selectedTheme = () => {
+const changeTheme = () => {
   if (currentTheme === "light") {
     darkTheme();
   } else {
     lightTheme();
   }
 };
-
-(function setTheme() {
+function setTheme() {
   if (currentTheme === "light") {
     lightTheme();
   } else {
     darkTheme();
   }
-})();
+}
 
 btnNext.addEventListener("click", nextPage);
 btnPrev.addEventListener("click", prevPage);
+btnTheme.addEventListener("click", changeTheme);
 searchInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
-    inputSearchMovies();
+    fetchMovie();
   }
 });
-btnTheme.addEventListener("click", () => {
-  selectedTheme();
-});
+
+viewMovieCards()
+dayMovie()
+setTheme()
