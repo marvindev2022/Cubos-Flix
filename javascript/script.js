@@ -80,16 +80,15 @@ function prevPage() {
 const searchInput = document.querySelector(".input");
 
 async function fetchMovie() {
-
-  if (!searchInput.value)
-    return viewMovieCards()
-
   try {
+    allMovies = [];
+
+    if (!searchInput.value)
+      return viewMovieCards()
 
     const search = await apiAxios.get(`search/movie?language=pt-BR&include_adult=false&query=${searchInput.value}`);
 
     FillData(search.data.results)
-    allMovies = [];
 
   } catch (erro) {
     console.error(erro.message);
