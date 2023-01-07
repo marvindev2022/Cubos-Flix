@@ -80,12 +80,12 @@ function prevPage() {
 const searchInput = document.querySelector(".input");
 
 async function fetchMovie() {
-  
-    if (!searchInput.value)
-      return viewMovieCards()
+
+  if (!searchInput.value)
+    return viewMovieCards()
 
   try {
-    
+
     const search = await apiAxios.get(`search/movie?language=pt-BR&include_adult=false&query=${searchInput.value}`);
 
     FillData(search.data.results)
@@ -100,9 +100,9 @@ async function fetchMovie() {
 }
 async function dayMovie() {
   try {
-
-    const movie = await apiAxios.get(`movie/436969?language=pt-BR`);
-    const trailer = await apiAxios.get(`movie/436969/videos?language=pt-BR`);
+    const dayMovie = await apiAxios.get("discover/movie?language=pt-BR&include_adult=false");
+    const movie = await apiAxios.get(`movie/${dayMovie.data.results[0].id}?language=pt-BR`);
+    const trailer = await apiAxios.get(`movie/${dayMovie.data.results[0].id}/videos?language=pt-BR`);
 
     const highlightVideo = document.querySelector(".highlight__video");
     highlightVideo.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.5) 100%, rgba(0, 0, 0, 0.5) 100%), url(${movie.data.backdrop_path})` ?? `url(${".src/assets/imagem-indisponivel-para-produtos-sem-imagem_15_5.jpg"})`;
