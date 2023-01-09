@@ -182,9 +182,13 @@ async function openModal(movieId) {
 const body = document.querySelector("body");
 const btnTheme = document.querySelector(".btn-theme");
 const logo = document.querySelector(".logo");
+ const h1Black = document.querySelector(".black")
+ const h1Red = document.querySelector(".red")
 
 const darkTheme = () => {
   currentTheme = "dark";
+  h1Black.style.color = "white"
+  h1Red.style.color = "red"
   searchInput.style.background = "#3E434D";
   searchInput.style.border = "1px solid #665F5F";
   logo.src = "../assets/logo.svg";
@@ -200,6 +204,8 @@ const darkTheme = () => {
 };
 const lightTheme = () => {
   currentTheme = "light";
+  h1Black.style.color = "black"
+  h1Red.style.color = "red"
   searchInput.style.background = "#fff";
   logo.src = "../assets/logo-dark.png";
   btnTheme.src = "../assets/light-mode.svg";

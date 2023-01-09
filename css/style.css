@@ -130,6 +130,19 @@
   cursor: pointer;
 
   box-shadow: 0px 4px 8px var(--shadow-color);
+
+  transition: all 0.10s;
+}
+.movie{
+ 
+}
+.movie:hover{
+    -webkit-filter: drop-shadow(15px 10px 5px rgba(0,0,0,.5));
+    -webkit-transform: scale(1.05);
+    
+    filter: drop-shadow(15px 10px 5px rgba(0,0,0,.5)); 
+    
+    transform: scale(1.05);
 }
 
 .movie__info {
